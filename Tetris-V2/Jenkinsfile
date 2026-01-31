@@ -10,12 +10,23 @@ pipeline{
     }
 
     stages {
+
+
         stage('Build Docker Image') {
             steps {
                 script {
                     echo "Building Tetris Docker Image..."
                     sh "docker build -t ${ECR_REPO_NAME}:${IMAGE_TAG} -f Tetris-V2/Dockerfile Tetris-V2/."
                     sh "docker tag ${ECR_REPO_NAME}:${IMAGE_TAG} ${ECR_REGISTRY}/${ECR_REPO_NAME}:${IMAGE_TAG}"
+                }
+            }
+        }
+
+        stage('Trivy Image Scan') {
+            steps {
+                script {
+                    echo "Scanning Image: ${ECR_REGISTRY}/${ECR_REPO_NAME}:${IMAGE_TAG}"
+                    sh "/usr/local/bin/trivy image --severity HIGH,CRITICAL ${ECR_REGISTRY}/${ECR_REPO_NAME}:${IMAGE_TAG}"
                 }
             }
         }
